@@ -1,0 +1,15 @@
+.table {
+    border-spacing: 0;
+    border-color: #0000004d;
+}
+
+td,
+th
+ {
+    padding: 10px;
+}
+
+.cell-min {
+    background-color: blue;
+    color: white;
+}
