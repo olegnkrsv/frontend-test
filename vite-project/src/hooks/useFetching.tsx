@@ -1,39 +1,49 @@
-import { FC, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { CurrencyData } from "../types/types";
-import { NUM_AFTER_COMMA } from "../utils";
+import { throttle } from "../utils";
 
 interface FetchDataProps {
-    urls: string[];
-    setData: (data: CurrencyData[]) => void;
-    pollFetch: (data: string[]) => void;
+  initialDataUrl: string[];
+  pollDataUrl: string[];
+  setData: (data: CurrencyData[]) => void;
+  pollInterval: number;
 }
 
-export const useFetching = ({ urls, setData, pollFetch }: FetchDataProps) => {
-    const fetchData = useCallback(async (urls: string[]) => {
-        try {
-            const response = await Promise.all(
-                urls.map(url => fetch(url).then(response => response.json()))
-            )
-            const newData = response.map(response => response as CurrencyData);
+export const useFetching = ({ initialDataUrl, pollDataUrl, setData, pollInterval }: FetchDataProps) => {
+  const fetchData = useCallback(async (urls: string[]) => {
+    try {
+      const response = await Promise.all(
+        urls.map(url => fetch(url).then(response => response.json()))
+      )
+      const newData = response.map(response => response as CurrencyData);
+      
+      setData(newData);
+    } catch (error) {
+      console.error('Error is:', error)
+      setTimeout(() => {
+        setData([]);
+        pollData();
+      }, 5000)
+    }
+  }, [setData]);
 
-            newData.forEach(source => {
-                source.rates.RUB = Number(source?.rates.RUB.toFixed(NUM_AFTER_COMMA));
-                source.rates.USD = Number(source?.rates.USD.toFixed(NUM_AFTER_COMMA));
-                source.rates.EUR = Number(source?.rates.EUR.toFixed(NUM_AFTER_COMMA));
-            });
+  const pollData = async () => {
+    await fetchData(pollDataUrl);
+  };
 
-            setData(newData);
-            pollFetch(urls);
-        } catch (error) {
-            console.error('Error is', error)
-            setTimeout(() => {
-                setData([]);
-                pollFetch(urls);
-            }, 5000)
+  const throttledPollData = throttle(pollData, pollInterval);
 
-        }
-    }, [urls, pollFetch, setData]);
 
-    return fetchData;
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      await fetchData(initialDataUrl);
+    };
+
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    throttledPollData();
+  }, [throttledPollData]);
+  return fetchData
 };
-

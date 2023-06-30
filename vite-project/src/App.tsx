@@ -1,10 +1,11 @@
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import Cell from './components/Cell';
 import HeaderColumn from './components/HeaderColumn';
+import { DELAY_TIME } from './constants';
 import { useFetching } from './hooks/useFetching';
 import './styles.css';
 import { CurrencyData } from './types/types';
-import { SOURCES } from './utils';
+import { SOURCES } from './constants';
 
 interface AppProps {
   initUrls: string[];
@@ -15,30 +16,31 @@ const App: FC<AppProps> = ({ initUrls, pollUrls }) => {
 
   const [data, setData] = useState<CurrencyData[]>([]);
 
-  const pollData = useCallback(() => {
-    fetchData(pollUrls);
-  }, [pollUrls]);
+  useFetching({
+    initialDataUrl: initUrls,
+    pollDataUrl: pollUrls,
+    setData: setData,
+    pollInterval: DELAY_TIME,
+  })
 
-  const fetchData = useFetching({ urls: initUrls, setData: setData, pollFetch: pollData })
-
-  useEffect(() => {
-    const fetchInitData = async () => {
-      await fetchData(initUrls)
+  const amountRates: { rates: CurrencyData['rates'] }[] = [];
+  data.map(source => {
+    if (source.rates) {
+      amountRates.push({ rates: source.rates });
     }
-    fetchInitData();
-  }, [fetchData, initUrls])
+  });
 
   return data.length > 0 ? (
     <div>
       <table className='table' border={1}>
         <HeaderColumn dataSources={SOURCES} />
         <tbody>
-          <Cell data={data}>RUB/{data[0]?.base}</Cell>
-          <Cell data={data}>USD/{data[1]?.base}</Cell>
-          <Cell data={data}>EUR/{data[2]?.base}</Cell>
-          <Cell data={data}>RUB/USD</Cell>
-          <Cell data={data}>RUB/EUR</Cell>
-          <Cell data={data}>EUR/USD</Cell>
+          <Cell allSoursesRates={amountRates} currency={"RUB"}>RUB/CUPCAKE</Cell>
+          <Cell allSoursesRates={amountRates} currency={"USD"}>USD/CUPCAKE</Cell>
+          <Cell allSoursesRates={amountRates} currency={"EUR"}>EUR/CUPCAKE</Cell>
+          <Cell allSoursesRates={amountRates} currency={"RUB"}>RUB/USD</Cell>
+          <Cell allSoursesRates={amountRates} currency={"USD"}>RUB/EUR</Cell>
+          <Cell allSoursesRates={amountRates} currency={"EUR"}>EUR/USD</Cell>
         </tbody>
       </table>
     </div>

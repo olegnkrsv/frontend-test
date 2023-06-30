@@ -1,27 +1,32 @@
 import { FC, PropsWithChildren } from 'react';
 import { CurrencyData } from '../types/types';
+import { NUM_AFTER_COMMA } from '../constants';
 
 
 interface CellDataProps {
-    data: CurrencyData[];
+    allSoursesRates: { rates: CurrencyData['rates'] }[]; // Тип данных для свойства data
+    currency: keyof CurrencyData['rates']; // Тип данных для свойства currentRate
 }
 
-const Cell: FC<PropsWithChildren<CellDataProps>> = ({ data, children }) => {
+const Cell: FC<PropsWithChildren<CellDataProps>> = ({ allSoursesRates, currency, children }) => {
 
-    const smallestRate = Math.min(...data.map(sourceData => sourceData.rates.RUB))
-    const hasMin = data.filter(sourceData => sourceData.rates.RUB === smallestRate).length > 1;
+    allSoursesRates.forEach(source => {
+        source.rates[currency] = Number(source?.rates[currency].toFixed(NUM_AFTER_COMMA));
+    })
+    const smallestRate = Math.min(...allSoursesRates.map(source => source.rates[currency]))
+    const hasMin = allSoursesRates.filter(source => source.rates[currency] === smallestRate).length > 1;
 
     return (
         <tr className='cell'>
             <td>{children}</td>
-            {data.map((sourceData, index) => (
-                <td key={index}
-                className={!hasMin && sourceData.rates.RUB === smallestRate
+            {allSoursesRates.map((source) => (
+                <td
+                className={!hasMin && source.rates[currency] === smallestRate
                     ? 'cell-min'
                     : ''
                 }
                 >
-                    {sourceData.rates.RUB}
+                    {source.rates[currency]}
                 </td>
             ))}
 
