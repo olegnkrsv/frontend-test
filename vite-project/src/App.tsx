@@ -1,52 +1,49 @@
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import Cell from './components/Cell';
 import HeaderColumn from './components/HeaderColumn';
-import { DELAY_TIME } from './constants';
+import { SOURCES } from './constants';
 import { useFetching } from './hooks/useFetching';
 import './styles.css';
 import { CurrencyData } from './types/types';
-import { SOURCES } from './constants';
 
-interface AppProps {
-  initUrls: string[];
-  pollUrls: string[];
-}
-
-const App: FC<AppProps> = ({ initUrls, pollUrls }) => {
+const App = () => {
 
   const [data, setData] = useState<CurrencyData[]>([]);
+  const [error, setError] = useState<string>('');
 
   useFetching({
-    initialDataUrl: initUrls,
-    pollDataUrl: pollUrls,
     setData: setData,
-    pollInterval: DELAY_TIME,
+    setError: setError,
   })
 
   const amountRates: { rates: CurrencyData['rates'] }[] = [];
-  data.map(source => {
+  data.forEach(source => {
     if (source.rates) {
       amountRates.push({ rates: source.rates });
     }
   });
 
-  return data.length > 0 ? (
+  return (
     <div>
-      <table className='table' border={1}>
-        <HeaderColumn dataSources={SOURCES} />
-        <tbody>
-          <Cell allSoursesRates={amountRates} currency={"RUB"}>RUB/CUPCAKE</Cell>
-          <Cell allSoursesRates={amountRates} currency={"USD"}>USD/CUPCAKE</Cell>
-          <Cell allSoursesRates={amountRates} currency={"EUR"}>EUR/CUPCAKE</Cell>
-          <Cell allSoursesRates={amountRates} currency={"RUB"}>RUB/USD</Cell>
-          <Cell allSoursesRates={amountRates} currency={"USD"}>RUB/EUR</Cell>
-          <Cell allSoursesRates={amountRates} currency={"EUR"}>EUR/USD</Cell>
-        </tbody>
-      </table>
+      {error && <h3>{error}</h3>}
+      {data.length > 0 ? (
+        <table className='table' border={1}>
+          <HeaderColumn dataSources={SOURCES} />
+          <tbody>
+            <Cell allSoursesRates={amountRates} currency={"RUB"}>RUB/CUPCAKE</Cell>
+            <Cell allSoursesRates={amountRates} currency={"USD"}>USD/CUPCAKE</Cell>
+            <Cell allSoursesRates={amountRates} currency={"EUR"}>EUR/CUPCAKE</Cell>
+            <Cell allSoursesRates={amountRates} currency={"RUB"}>RUB/USD</Cell>
+            <Cell allSoursesRates={amountRates} currency={"USD"}>RUB/EUR</Cell>
+            <Cell allSoursesRates={amountRates} currency={"EUR"}>EUR/USD</Cell>
+          </tbody>
+        </table>
+
+      ) : (
+        <p>Loading data...</p>
+      )}
     </div>
-  ) : (
-    <h2>Loading data...</h2>
   );
-}
+};
 
 export default App

@@ -1,15 +1,14 @@
 import { useCallback, useEffect } from "react";
+import { DELAY_TIME, INIT_URLS, POLL_URLS } from "../constants";
 import { CurrencyData } from "../types/types";
 import { throttle } from "../utils";
 
 interface FetchDataProps {
-  initialDataUrl: string[];
-  pollDataUrl: string[];
   setData: (data: CurrencyData[]) => void;
-  pollInterval: number;
+  setError: (error: string) => void;
 }
 
-export const useFetching = ({ initialDataUrl, pollDataUrl, setData, pollInterval }: FetchDataProps) => {
+export const useFetching = ({ setData, setError }: FetchDataProps) => {
   const fetchData = useCallback(async (urls: string[]) => {
     try {
       const response = await Promise.all(
@@ -19,7 +18,7 @@ export const useFetching = ({ initialDataUrl, pollDataUrl, setData, pollInterval
       
       setData(newData);
     } catch (error) {
-      console.error('Error is:', error)
+      setError(`Error! ${error} while fetching data. Please check your network connectivity.`)
       setTimeout(() => {
         setData([]);
         pollData();
@@ -27,23 +26,22 @@ export const useFetching = ({ initialDataUrl, pollDataUrl, setData, pollInterval
     }
   }, [setData]);
 
-  const pollData = async () => {
-    await fetchData(pollDataUrl);
-  };
-
-  const throttledPollData = throttle(pollData, pollInterval);
-
-
   useEffect(() => {
     const fetchInitialData = async () => {
-      await fetchData(initialDataUrl);
+      await fetchData(INIT_URLS);
     };
 
     fetchInitialData();
   }, []);
 
+  const pollData = async () => {
+    await fetchData(POLL_URLS);
+  };
+
+  const throttledPollData = throttle(pollData, DELAY_TIME);
+
   useEffect(() => {
     throttledPollData();
   }, [throttledPollData]);
-  return fetchData
+
 };
