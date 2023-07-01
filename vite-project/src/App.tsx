@@ -16,6 +16,7 @@ const App = () => {
     setError: setError,
   })
 
+  // добавление в массив amountRates всех rates 
   const amountRates: { rates: CurrencyData['rates'] }[] = [];
   data.forEach(source => {
     if (source.rates) {

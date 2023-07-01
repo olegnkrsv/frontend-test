@@ -4,3 +4,4 @@ export const POLL_URLS = [`${BASE_URL}/api/v1/first/poll`, `${BASE_URL}/api/v1/s
 export const SOURCES = ['first', 'second', 'third'];
 export const NUM_AFTER_COMMA = 3;
 export const DELAY_TIME = 500;
+export const ERROR_DELAY = 5000;
