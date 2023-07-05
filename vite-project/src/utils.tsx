@@ -1,13 +1,11 @@
-export const throttle = <T extends (...args: any[]) => void>(func: T, delay: number) => {
-    let throttled = false;
-  
-    return (...args: Parameters<T>) => {
-      if (!throttled) {
-        func(...args);
-        throttled = true;
-        setTimeout(() => {
-          throttled = false;
-        }, delay);
-      }
-    };
+export const debounce = <T extends (...args: any[]) => any>(fn: T, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      fn.apply(this, args);
+      timeoutId = undefined;
+    }, delay);
   };
+};

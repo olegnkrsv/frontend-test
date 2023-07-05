@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from "react";
-import { DELAY_TIME, ERROR_DELAY, INIT_URLS, POLL_URLS } from "../constants";
+import { ERROR_DELAY, INIT_URLS, POLL_URLS } from "../constants";
 import { CurrencyData } from "../types/types";
-import { throttle } from "../utils";
 
 interface FetchDataProps {
   setData: (data: CurrencyData[]) => void;
@@ -15,7 +14,7 @@ export const useFetching = ({ setData, setError }: FetchDataProps) => {
         urls.map(url => fetch(url).then(response => response.json()))
       )
       const newData = response.map(response => response as CurrencyData);
-
+      
       setData(newData);
     } catch (error) {
       setError(`Error! ${error} while fetching data. Please check your network connectivity.`)
@@ -38,10 +37,8 @@ export const useFetching = ({ setData, setError }: FetchDataProps) => {
     await fetchData(POLL_URLS);
   };
 
-  const throttledPollData = throttle(pollData, DELAY_TIME);
-
   useEffect(() => {
-    throttledPollData();
-  }, [throttledPollData]);
+    pollData();
+  }, [pollData]);
 
 };
