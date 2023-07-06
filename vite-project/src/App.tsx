@@ -4,7 +4,6 @@ import HeaderColumn from './components/HeaderColumn';
 import { ERROR_DELAY, INIT_URLS, POLL_INTERVAL, POLL_URLS, SOURCES } from './constants';
 import './styles.css';
 import { CurrencyData } from './types/types';
-import { debounce } from './utils';
 
 const App = () => {
 
@@ -14,9 +13,14 @@ const App = () => {
   useEffect(() => {
     const fetchData = async (urls: string[]) => {
       try {
-        const responses = await Promise.all(urls.map(url => fetch(url).then(response => response.json())));
-        const newData = responses.map(response => response as CurrencyData);
-        setData(newData);
+        const responses = [];
+        for (const url of urls) {
+          const response = await fetch(url);
+          const data = await response.json()
+          responses.push(data as CurrencyData);
+        }
+
+        setData(responses);
         setError('');
       } catch (error) {
         setError(`Error! ${error} while fetching data. Please check your network connectivity.`);
@@ -31,12 +35,10 @@ const App = () => {
       await fetchData(INIT_URLS);
     };
 
-    const debouncedFetchData = debounce(fetchData, 1000);
-
     const pollData = async () => {
-      await debouncedFetchData(POLL_URLS);
+      await fetchData(POLL_URLS);
     };
-
+    
     fetchInitialData();
     const intervalId = setInterval(pollData, POLL_INTERVAL);
 
@@ -45,7 +47,7 @@ const App = () => {
     };
   }, []);
 
-// функция расчета минимального значения выбранной валюты среди всех источников
+  // функция расчета минимального значения выбранной валюты среди всех источников
   const calculateMinValue = (currency: keyof CurrencyData['rates']): number => {
     const rates = data.map(source => source.rates[currency]);
     return Math.min(...rates);

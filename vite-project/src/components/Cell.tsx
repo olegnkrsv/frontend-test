@@ -11,10 +11,6 @@ interface CellDataProps {
 
 const Cell: FC<PropsWithChildren<CellDataProps>> = ({ allSoursesRates, currency, minValue, children }) => {
 
-    // allSoursesRates.forEach(source => {
-    //     source.rates[currency] = Number(source?.rates[currency].toFixed(NUM_AFTER_COMMA));  // округление до 3 знаков после запятой
-    // })
-
     return (
         <tr className='cell'>
             <td>{children}</td>
@@ -22,10 +18,10 @@ const Cell: FC<PropsWithChildren<CellDataProps>> = ({ allSoursesRates, currency,
                 const rate = source.rates[currency];
                 const isMinValue = rate === minValue;
                 return (
-                <td className={isMinValue ? 'cell-min'
+                <td key={index} className={isMinValue ? 'cell-min' // index в key здесь в рамках исключения
                         : ''
                     }>
-                    {rate.toFixed(NUM_AFTER_COMMA)}
+                    {rate.toFixed(NUM_AFTER_COMMA)} 
                 </td>
                 );
             })}
